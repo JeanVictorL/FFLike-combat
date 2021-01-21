@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Linq;
 
 namespace FFLike_combat
 {
@@ -12,9 +13,13 @@ namespace FFLike_combat
         public string Winner { get; set; }
         private const int DisplayDelay = 0;
 
-        public Random random = new Random();
+        public List<Unit> Units { get; set; } = new List<Unit>();
 
-        public List<Unit> Units { get; set; }
+        Random random = new Random();
+
+        Queue btQueue = new Queue();
+
+        string[] Names = { "Templar", "Fighter", "Monk", "Rogue", "Barbarian", "Ninja" };
 
         public void AddUnit(Unit unit)
         {
@@ -34,16 +39,9 @@ namespace FFLike_combat
             if (defender.IsDead)
             {
                 Console.WriteLine($"{defender.Name} died!");
-                defender.Initiative = 0;
+                btQueue.Units.Remove(defender);
                 Thread.Sleep(DisplayDelay);
-                Winner = attacker.Name;
-                Finished = true;
             }
-        }
-
-        public void TurnOrder()
-        {
-            
         }
 
         public void Turn()
@@ -51,17 +49,38 @@ namespace FFLike_combat
             TurnNumber++;
             Console.WriteLine($"[ TURN {TurnNumber} ]");
             Thread.Sleep(DisplayDelay);
-            
-        }
+            for (int i = 0; i < btQueue.Units.Count; i++)
+            {
+                var attacker = btQueue.Pop();
+                var otherUnits = btQueue.Units.Where(u => u != attacker).ToList();
+                var defender = otherUnits[random.Next(0, otherUnits.Count - 1)];
+                Attack(attacker, defender);
+            }
+        }   
 
         public void Play()
         {
-            AddUnit(new Unit());
-            AddUnit(new Unit());
+            for (int i = 0; i < 4; i++)
+            {
+                AddUnit(new Unit(Names[random.Next(0, Names.Length-1)]));
+                //AddUnit(new Unit($"Unit{i+1}"));
+            }
+            foreach (var unit in Units.OrderBy(u=>u.Initiative)) 
+            {
+                btQueue.Add(unit);
+            }
             Thread.Sleep(2000);
             while (!Finished)
             {
-                Turn();
+                if (btQueue.Units.Count > 1)
+                {
+                    Turn();
+                }
+                else
+                {
+                    Finished = true;
+                    Winner = btQueue.Units[0].Name;
+                }
             }
 
             Console.WriteLine($"** Game over! {Winner} wins! **");
