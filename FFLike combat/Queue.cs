@@ -21,5 +21,10 @@ namespace FFLike_combat
             Add(unit);
             return unit;
         }
+
+        public void Reset()
+        {
+            Units = new List<Unit>();
+        }
     }
 }

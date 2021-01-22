@@ -9,22 +9,16 @@ namespace FFLike_combat
     class Battle
     {
         public int TurnNumber { get; set; }
-        public bool Finished { get; set; } = false;
         public string Winner { get; set; }
         private const int DisplayDelay = 0;
-
-        public List<Unit> Units { get; set; } = new List<Unit>();
 
         Random random = new Random();
 
         Queue btQueue = new Queue();
 
-        string[] Names = { "Templar", "Fighter", "Monk", "Rogue", "Barbarian", "Ninja" };
+        Team team = new Team();
 
-        public void AddUnit(Unit unit)
-        {
-            Units.Add(unit);
-        }
+        string[] Names = { "Templar", "Fighter", "Monk", "Rogue", "Barbarian", "Ninja" };
 
         public void Attack(Unit attacker, Unit defender)
         {
@@ -40,6 +34,14 @@ namespace FFLike_combat
             {
                 Console.WriteLine($"{defender.Name} died!");
                 btQueue.Units.Remove(defender);
+                if (team.Ally.Contains(defender))
+                {
+                    team.Ally.Remove(defender);
+                }
+                else if (team.Enemy.Contains(defender))
+                {
+                    team.Enemy.Remove(defender);
+                }
                 Thread.Sleep(DisplayDelay);
             }
         }
@@ -54,37 +56,49 @@ namespace FFLike_combat
                 var attacker = btQueue.Pop();
                 var otherUnits = btQueue.Units.Where(u => u != attacker).ToList();
                 var defender = otherUnits[random.Next(0, otherUnits.Count - 1)];
+                if (team.Ally.Contains(attacker))
+                {
+                    defender = team.Enemy[random.Next(0, team.Enemy.Count - 1)];
+                }
+                else if (team.Enemy.Contains(attacker))
+                {
+                    defender = team.Ally[random.Next(0, team.Ally.Count - 1)];
+                }
                 Attack(attacker, defender);
             }
         }   
 
         public void Play()
         {
-            for (int i = 0; i < 4; i++)
+            team.AddAlly(new Unit("Bob", 3));
+            team.AddAlly(new Unit("Lucy", 3));
+            for (int i = 0; i < 3; i++)
             {
-                AddUnit(new Unit(Names[random.Next(0, Names.Length-1)]));
-                //AddUnit(new Unit($"Unit{i+1}"));
+                team.AddEnemy(new Unit());
             }
-            foreach (var unit in Units.OrderBy(u=>u.Initiative)) 
+            ToQueue();
+            Thread.Sleep(2000);
+            while (team.Ally.Count > 0 && team.Enemy.Count > 0)
+            {
+                Turn();
+            }
+            if (team.Ally.Count > 0)
+            {
+                Winner = "Ally team";
+            }
+            else if (team.Enemy.Count > 0)
+            {
+                Winner = "Enemy team";
+            }
+            Console.WriteLine($"** Game over! {Winner} wins! **");
+            Console.ReadLine();
+        }
+        public void ToQueue()
+        {
+            foreach (var unit in team.AllUnits.OrderBy(u => u.Initiative))
             {
                 btQueue.Add(unit);
             }
-            Thread.Sleep(2000);
-            while (!Finished)
-            {
-                if (btQueue.Units.Count > 1)
-                {
-                    Turn();
-                }
-                else
-                {
-                    Finished = true;
-                    Winner = btQueue.Units[0].Name;
-                }
-            }
-
-            Console.WriteLine($"** Game over! {Winner} wins! **");
-            Console.ReadLine();
         }
     }
 }
