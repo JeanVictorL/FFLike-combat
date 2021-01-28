@@ -56,15 +56,23 @@ namespace FFLike_combat
                 var attacker = btQueue.Pop();
                 var otherUnits = btQueue.Units.Where(u => u != attacker).ToList();
                 var defender = otherUnits[random.Next(0, otherUnits.Count - 1)];
+                var playerControll = false;
                 if (team.Ally.Contains(attacker))
                 {
                     defender = team.Enemy[random.Next(0, team.Enemy.Count - 1)];
+                    playerControll = true;
                 }
                 else if (team.Enemy.Contains(attacker))
                 {
                     defender = team.Ally[random.Next(0, team.Ally.Count - 1)];
                 }
-                Attack(attacker, defender);
+                if (playerControll)
+                {
+                    //ask what to do
+                    
+                    Attack(attacker, defender);
+                }
+                else Attack(attacker, defender);
             }
         }   
 
