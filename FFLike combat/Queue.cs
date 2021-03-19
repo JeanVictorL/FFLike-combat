@@ -26,5 +26,18 @@ namespace FFLike_combat
         {
             Units = new List<Unit>();
         }
+
+        public void Kill(Team team, Unit unit)
+        {
+            Units.Remove(unit);
+            if (team.Ally.Contains(unit))
+            {
+                team.Ally.Remove(unit);
+            }
+            else if (team.Enemy.Contains(unit))
+            {
+                team.Enemy.Remove(unit);
+            }
+        }
     }
 }

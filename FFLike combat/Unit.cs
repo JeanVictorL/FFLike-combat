@@ -17,9 +17,24 @@ namespace FFLike_combat
         public int Initiative { get; set; }
         public bool IsDead => Health <= 0;
 
-        public Unit(string name = "Generic", int level = 1)
+        public string[] Names { get; set; } = { "ninja", "Warrior", "Monk", "Assassin", "Rogue"};
+
+        public string GetName()
+        {
+            return Names[new Random().Next(0, Names.Length)];
+        }
+
+        public Unit(string name, int level = 1)
         {
             Name = name;
+            Level = level;
+            SetStats();
+            Initiative = new Random().Next(1, 21);
+        }
+
+        public Unit(int level = 1)
+        {
+            Name = GetName();
             Level = level;
             SetStats();
             Initiative = new Random().Next(1, 21);
