@@ -9,8 +9,8 @@ namespace FFLike_combat
     class Battle
     {
         public int TurnNumber { get; set; }
-        public string Winner { get; set; }
-        private const int DisplayDelay = 0;
+
+        private const int DisplayDelay = 1000;
 
         Random random = new Random();
 
@@ -18,7 +18,7 @@ namespace FFLike_combat
 
         Team team = new Team();
 
-        string[] Names = { "Templar", "Fighter", "Monk", "Rogue", "Barbarian", "Ninja" };
+        Control control = new Control();
 
         public void Attack(Unit attacker, Unit defender)
         {
@@ -28,20 +28,13 @@ namespace FFLike_combat
             var roll = random.Next(1, 21);
             defender.TakeDamage(attacker.AttackDamage(roll));
             Console.WriteLine(
-                $"{defender.Name} takes {defender.CalcDamage(attacker.AttackDamage(roll))} damage! HP {prevHp}->{defender.Health}");
+                $"{defender.Name} takes {defender.CalcDamage(attacker.AttackDamage(roll))} " +
+                $"damage! HP {prevHp}->{defender.Health}");
             Thread.Sleep(DisplayDelay);
             if (defender.IsDead)
             {
                 Console.WriteLine($"{defender.Name} died!");
-                btQueue.Units.Remove(defender);
-                if (team.Ally.Contains(defender))
-                {
-                    team.Ally.Remove(defender);
-                }
-                else if (team.Enemy.Contains(defender))
-                {
-                    team.Enemy.Remove(defender);
-                }
+                btQueue.Kill(team, defender);
                 Thread.Sleep(DisplayDelay);
             }
         }
@@ -56,28 +49,24 @@ namespace FFLike_combat
                 var attacker = btQueue.Pop();
                 var otherUnits = btQueue.Units.Where(u => u != attacker).ToList();
                 var defender = otherUnits[random.Next(0, otherUnits.Count - 1)];
-                var playerControll = false;
+                Console.WriteLine($"{attacker.Name}'s turn");
+                Thread.Sleep(DisplayDelay);
                 if (team.Ally.Contains(attacker))
                 {
-                    defender = team.Enemy[random.Next(0, team.Enemy.Count - 1)];
-                    playerControll = true;
+                    defender = control.Input(team);
                 }
                 else if (team.Enemy.Contains(attacker))
                 {
                     defender = team.Ally[random.Next(0, team.Ally.Count - 1)];
                 }
-                if (playerControll)
-                {
-                    //ask what to do
-                    
-                    Attack(attacker, defender);
-                }
-                else Attack(attacker, defender);
+                Attack(attacker, defender);
+
             }
-        }   
+        }
 
         public void Play()
         {
+            string Message = "TBD";
             team.AddAlly(new Unit("Bob", 3));
             team.AddAlly(new Unit("Lucy", 3));
             for (int i = 0; i < 3; i++)
@@ -92,13 +81,13 @@ namespace FFLike_combat
             }
             if (team.Ally.Count > 0)
             {
-                Winner = "Ally team";
+                Message = "You won!";
             }
             else if (team.Enemy.Count > 0)
             {
-                Winner = "Enemy team";
+                Message = "You lost...";
             }
-            Console.WriteLine($"** Game over! {Winner} wins! **");
+            Console.WriteLine($"** Game over! {Message} **");
             Console.ReadLine();
         }
         public void ToQueue()

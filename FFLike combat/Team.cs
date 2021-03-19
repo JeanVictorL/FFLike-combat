@@ -11,8 +11,6 @@ namespace FFLike_combat
         public List<Unit> Enemy { get; set; } = new List<Unit>();
         public List<Unit> AllUnits { get; set; } = new List<Unit>();
 
-        Queue btQueue = new Queue();
-
         public void AddEnemy(Unit unit)
         {
             Enemy.Add(unit);
